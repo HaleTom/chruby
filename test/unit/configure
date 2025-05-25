@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+pushd "${0%/*}" >/dev/null
+test_dir="$PWD"
+popd >/dev/null
+
+test_fixtures_dir="$test_dir/fixtures"
+test_root_dir="$test_fixtures_dir/root"
+
+# load the test configuration
+. "$test_dir/config.sh"
+
+mkdir -p "$test_root_dir"
+mkdir -p "$test_root_dir/home"
+mkdir -p "$test_root_dir/opt/rubies"
+
+# clean any pre-existing rubies
+rm -rf "$test_root_dir/opt/rubies/"*
+
+function generate_bin_ruby()
+{
+	local ruby_engine="$1"
+	local ruby_version="$2"
+	local gem_root="$3"
+
+	pushd "$test_root_dir/opt/rubies" >/dev/null
+
+	# create the test opt/rubies/ruby-X.Y.Z/bin/ruby stub
+	mkdir -p "${ruby_engine}-${ruby_version}/bin"
+	cat >"${ruby_engine}-${ruby_version}/bin/ruby" <<EOF
+#!/usr/bin/env bash
+
+if [[ "\$1" == "-e" ]]; then
+	case "\$2" in
+		"puts Process.pid")
+			echo \$BASHPID
+			;;
+		"puts Process.ppid")
+			echo \$PPID
+			;;
+		"print RUBY_VERSION")
+			echo -n "$ruby_version"
+			;;
+		*)
+			echo "error: no stub for ruby expression: '\$2'" >&2
+			exit -1
+			;;
+	esac
+else
+	while IFS=$'\\n' read -r line; do
+		case "\$line" in
+			"puts \\"export RUBY_ENGINE=#{Object.const_defined?(:RUBY_ENGINE) ? RUBY_ENGINE : 'ruby'};\\"")
+				echo "export RUBY_ENGINE=$ruby_engine;"
+				;;
+			"puts \\"export RUBY_VERSION=#{RUBY_VERSION};\\"")
+				echo "export RUBY_VERSION=$ruby_version;"
+				;;
+			*"puts \\"export GEM_ROOT=#{Gem.default_dir.inspect};\\""*)
+				echo "export GEM_ROOT=$gem_root;"
+				;;
+			*)
+				echo "error: no stub for ruby statement: '\$line'" >&2
+				exit -1
+				;;
+		esac
+	done
+fi
+EOF
+	chmod +x "${ruby_engine}-${ruby_version}/bin/ruby"
+	popd >/dev/null
+}
+
+generate_bin_ruby "$test_ruby_engine" "$test_ruby_version" "$test_gem_root"
+generate_bin_ruby "$test_auto_ruby_engine" "$test_auto_ruby_version" "$test_auto_gem_root"

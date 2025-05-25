@@ -1,20 +1,28 @@
-. ./test/helper.sh
+. ./test/unit/helper.sh
 
 function setUp()
 {
 	chruby_use "$test_ruby_root" >/dev/null
 
-	export PATH="$GEM_HOME/bin:$GEM_ROOT/bin:$RUBY_ROOT/bin:$test_path"
+	export PATH="$GEM_HOME/bin:$GEM_ROOT/bin:$RUBY_ROOT/bin:$original_path"
 }
 
 function test_chruby_reset_hash_table()
 {
-	if [[ -n "$BASH_VERSION" ]]; then
-		assertEquals "did not clear the path table" \
-			     "hash: hash table empty" "$(hash)"
-	elif [[ -n "$ZSH_VERSION" ]]; then
+	if [[ -n "$ZSH_VERSION" ]]; then
+		chruby_reset
+
 		assertEquals "did not clear the path table" \
 			     "" "$(hash)"
+	elif [[ -n "$BASH_VERSION" ]]; then
+		local old_lang="$LANG"
+		export LANG=en_US.UTF-8
+		chruby_reset
+
+		assertEquals "did not clear the path table" \
+			     "hash: hash table empty" "$(hash)"
+
+		LANG="$old_lang"
 	fi
 }
 
@@ -29,7 +37,7 @@ function test_chruby_reset_env_variables()
 	assertNull "GEM_HOME was not unset"      "$GEM_HOME"
 	assertNull "GEM_PATH was not unset"      "$GEM_PATH"
 
-	assertEquals "PATH was not sanitized"    "$test_path" "$PATH"
+	assertEquals "PATH was not sanitized"    "$original_path" "$PATH"
 }
 
 function test_chruby_reset_duplicate_path()
@@ -38,7 +46,7 @@ function test_chruby_reset_duplicate_path()
 
 	chruby_reset
 
-	assertEquals "PATH was not sanitized"    "$test_path" "$PATH"
+	assertEquals "PATH was not sanitized"    "$original_path" "$PATH"
 }
 
 function test_chruby_reset_modified_gem_path()
@@ -56,11 +64,11 @@ function test_chruby_reset_no_gem_root_or_gem_home()
 {
 	export GEM_HOME=""
 	export GEM_ROOT=""
-	export PATH="$test_path:/bin"
+	export PATH="$original_path:/bin"
 
 	chruby_reset
 
-	assertEquals "PATH was messed up" "$test_path:/bin" "$PATH"
+	assertEquals "PATH was messed up" "$original_path:/bin" "$PATH"
 }
 
 SHUNIT_PARENT=$0 . $SHUNIT2

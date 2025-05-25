@@ -1,6 +1,6 @@
 # chruby
 
-[![Build Status](https://travis-ci.org/postmodern/chruby.svg?branch=master)](https://travis-ci.org/postmodern/chruby)
+[![CI](https://github.com/postmodern/chruby/actions/workflows/shunit2.yml/badge.svg)](https://github.com/postmodern/chruby/actions/workflows/shunit2.yml)
 
 Changes the current Ruby.
 
@@ -25,7 +25,8 @@ Changes the current Ruby.
 ## Anti-Features
 
 * Does not hook `cd`.
-* Does not install executable shims.
+* Does not install executable shims or require regenerating them after
+  installing gems.
 * Does not require Rubies be installed into your home directory.
 * Does not automatically switch Rubies by default.
 * Does not require write-access to the Ruby directory in order to install gems.
@@ -36,10 +37,12 @@ Changes the current Ruby.
 
 ## Install
 
-    wget -O chruby-0.3.9.tar.gz https://github.com/postmodern/chruby/archive/v0.3.9.tar.gz
-    tar -xzvf chruby-0.3.9.tar.gz
-    cd chruby-0.3.9/
-    sudo make install
+```shell
+wget https://github.com/postmodern/chruby/releases/download/v0.3.9/chruby-0.3.9.tar.gz
+tar -xzvf chruby-0.3.9.tar.gz
+cd chruby-0.3.9/
+sudo make install
+```
 
 ### PGP
 
@@ -47,37 +50,53 @@ All releases are [PGP] signed for security. Instructions on how to import my
 PGP key can be found on my [blog][1]. To verify that a release was not tampered 
 with:
 
-    wget https://raw.github.com/postmodern/chruby/master/pkg/chruby-0.3.9.tar.gz.asc
-    gpg --verify chruby-0.3.9.tar.gz.asc chruby-0.3.9.tar.gz
+```shell
+wget https://github.com/postmodern/chruby/releases/download/v0.3.9/chruby-0.3.9.tar.gz.asc
+gpg --verify chruby-0.3.9.tar.gz.asc chruby-0.3.9.tar.gz
+```
 
 ### setup.sh
 
 chruby also includes a `setup.sh` script, which installs chruby. Simply run the 
 script as root or via `sudo`:
 
-    sudo ./scripts/setup.sh
+```shell
+sudo ./scripts/setup.sh
+```
 
 ### Homebrew
 
 chruby can also be installed with [homebrew]:
 
-    brew install chruby
+```shell
+brew install chruby
+```
 
 Or the absolute latest chruby can be installed from source:
 
-    brew install chruby --HEAD
+```shell
+brew install chruby --HEAD
+```
 
 ### Arch Linux
 
 chruby is already included in the [AUR]:
 
-    yaourt -S chruby
+```shell
+yaourt -S chruby
+```
+
+### Fedora Linux
+
+chruby is available as an rpm on [Fedora Copr](https://copr.fedorainfracloud.org/coprs/postmodern/chruby/).
     
 ### FreeBSD
 
 chruby is included in the official [FreeBSD ports collection]:
 
-    cd /usr/ports/devel/chruby/ && make install clean
+```shell
+cd /usr/ports/devel/chruby/ && make install clean
+```
 
 ### Rubies
 
@@ -96,10 +115,12 @@ You can also use [ruby-install] to install additional Rubies:
 
 Installing to `/opt/rubies` or `~/.rubies`:
 
-    ruby-install ruby
-    ruby-install jruby
-    ruby-install rubinius
-    ruby-install maglev
+```shell
+ruby-install ruby
+ruby-install jruby
+ruby-install rubinius
+ruby-install maglev
+```
 
 #### ruby-build
 
@@ -107,27 +128,35 @@ You can also use [ruby-build] to install additional Rubies:
 
 Installing to `/opt/rubies`:
 
-    ruby-build 1.9.3-p392 /opt/rubies/ruby-1.9.3-p392
-    ruby-build jruby-1.7.3 /opt/rubies/jruby-1.7.3
-    ruby-build rbx-2.0.0-rc1 /opt/rubies/rubinius-2.0.0-rc1
-    ruby-build maglev-1.0.0 /opt/rubies/maglev-1.0.0
+```shell
+ruby-build 1.9.3-p392 /opt/rubies/ruby-1.9.3-p392
+ruby-build jruby-1.7.3 /opt/rubies/jruby-1.7.3
+ruby-build rbx-2.0.0-rc1 /opt/rubies/rubinius-2.0.0-rc1
+ruby-build maglev-1.0.0 /opt/rubies/maglev-1.0.0
+```
 
 ## Configuration
 
 Add the following to the `~/.bashrc` or `~/.zshrc` file:
 
-``` bash
+```shell
 source /usr/local/share/chruby/chruby.sh
 ```
 
-*Note:* OSX does not automatically execute `~/.bashrc`, instead try adding to `/etc/bashrc`.
+#### macOS
+
+```shell
+source $HOMEBREW_PREFIX/opt/chruby/share/chruby/chruby.sh # Or run `brew info chruby` to find out installed directory
+```
+
+*Note:* macOS does not automatically execute `~/.bashrc`, instead try adding to `/etc/bashrc`.
 
 ### System Wide
 
 If you wish to enable chruby system-wide, add the following to
 `/etc/profile.d/chruby.sh`:
 
-``` bash
+```shell
 if [ -n "$BASH_VERSION" ] || [ -n "$ZSH_VERSION" ]; then
   source /usr/local/share/chruby/chruby.sh
   ...
@@ -146,7 +175,7 @@ restart the shell before chruby can recognize them.
 For Rubies installed in non-standard locations, simply append their paths to
 the `RUBIES` variable:
 
-``` bash
+```shell
 source /usr/local/share/chruby/chruby.sh
 
 RUBIES+=(
@@ -161,19 +190,19 @@ If you are migrating from another Ruby manager, set `RUBIES` accordingly:
 
 #### RVM
 
-``` bash
+```shell
 RUBIES+=(~/.rvm/rubies/*)
 ```
 
 #### rbenv
 
-``` bash
+```shell
 RUBIES+=(~/.rbenv/versions/*)
 ```
 
 #### rbfu
 
-``` bash
+```shell
 RUBIES+=(~/.rbfu/rubies/*)
 ```
 
@@ -183,12 +212,27 @@ If you want chruby to auto-switch the current version of Ruby when you `cd`
 between your different projects, simply load `auto.sh` in `~/.bashrc` or
 `~/.zshrc`:
 
-``` bash
+```shell
 source /usr/local/share/chruby/chruby.sh
 source /usr/local/share/chruby/auto.sh
 ```
 
-*Note:* OSX does not automatically execute `~/.bashrc`, instead try adding to `/etc/bashrc`.
+> *Note:* macOS does not automatically source `~/.bashrc`. Bash users should
+> create the file `~/.bash_profile` with following content:
+>
+> ```bash
+> if [[ -f ~/.profile ]]; then
+>     source ~/.profile
+> fi
+>
+> if [[ $- == *i* ]] && [[ -f ~/.bashrc ]]; then
+>     source ~/.bashrc
+> fi
+> ```
+>
+> so that the terminal loads `~/.bashrc` and `~/.profile` (the POSIX one). If
+> `~/.bash_profile` exists, Bash users should append the above lines to
+> `~/.bash_profile` as needed.
 
 chruby will check the current and parent directories for a [.ruby-version]
 file. Other Ruby switchers also understand this file:
@@ -204,11 +248,15 @@ Once you have loaded `chruby.sh` and/or `auto.sh` in your shell configuration,
 you can also set a default Ruby. Simply call the `chruby` function in
 `~/.bash_profile` or `~/.zprofile`:
 
-    chruby ruby-1.9
+```shell
+chruby ruby-1.9
+```
 
 If you have enabled auto-switching, simply create a `.ruby-version` file:
 
-    echo "ruby-1.9" > ~/.ruby-version
+```shell
+echo "ruby-1.9" > ~/.ruby-version
+```
 
 ### RubyGems
 
@@ -368,4 +416,4 @@ Switch to an arbitrary Ruby on the fly:
 [JRuby]: http://jruby.org/
 [Rubinius]: http://rubini.us/
 
-[1]: http://postmodern.github.com/contact.html#pgp
+[1]: https://postmodern.github.io/pgp/

@@ -2,7 +2,7 @@ CHRUBY_VERSION="0.3.9"
 RUBIES=()
 
 for dir in "$PREFIX/opt/rubies" "$HOME/.rubies"; do
-	[[ -d "$dir" && -n "$(ls -A "$dir")" ]] && RUBIES+=("$dir"/*)
+	[[ -d "$dir" && -n "$(command ls -A "$dir")" ]] && RUBIES+=("$dir"/*)
 done
 unset dir
 
@@ -76,7 +76,7 @@ function chruby()
 				if [[ "$dir" == "$RUBY_ROOT" ]]; then
 					echo " * ${ruby} ${RUBYOPT}"
 				else
-					echo "  ${ruby}"
+					echo "   ${ruby}"
 				fi
 
 			done

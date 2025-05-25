@@ -2,5 +2,7 @@
 /pkg/*.tar.gz
 /pkg/*.tar.bz2
 /pkg/*.zip
-/test/opt/rubies
-/test/home/.zcompdump
+/test/unit/fixtures/root/opt/rubies
+/test/unit/fixtures/root/home/.zcompdump
+/test/unit/fixtures/ruby_versions/.ruby-version
+/test/unit/fixtures/ruby_versions/modified_version/.ruby-version

@@ -1,43 +1,38 @@
-. ./test/helper.sh
+. ./test/unit/helper.sh
 
 function setUp()
 {
 	original_rubies=(${RUBIES[@]})
 }
 
-function tearDown()
-{
-	chruby_reset
-
-	RUBIES=(${original_rubies[@]})
-}
-
 function test_chruby_default_RUBIES()
 {
 	assertEquals "did not correctly populate RUBIES" \
-		     "$test_ruby_root" \
+		     "${test_rubies[*]}" \
 		     "${RUBIES[*]}"
 }
 
-function test_chruby_2_2()
+function test_chruby_X_Y()
 {
-	chruby "2.2" >/dev/null
+	chruby "$test_ruby_version_x_y" >/dev/null
 
-	assertEquals "did not match 2.2" "$test_ruby_root" "$RUBY_ROOT"
+	assertEquals "did not match $test_ruby_version_x_y" "$test_ruby_root" "$RUBY_ROOT"
 }
 
 function test_chruby_multiple_matches()
 {
-	RUBIES=(/path/to/ruby-2.2 "$test_ruby_root")
+	local fake_ruby="/path/to/ruby-${test_ruby_version_x_y}"
 
-	chruby "2.2" >/dev/null
+	RUBIES=("$fake_ruby" "$test_ruby_root")
+
+	chruby "${test_ruby_version_x_y}" >/dev/null
 
 	assertEquals "did not use the last match" "$test_ruby_root" "$RUBY_ROOT"
 }
 
 function test_chruby_exact_match_first()
 {
-	RUBIES=("$test_ruby_root" "$test_ruby_root-rc1")
+	RUBIES=("$test_ruby_root" "${test_ruby_root}-rc1")
 
 	chruby "${test_ruby_root##*/}"
 
@@ -66,6 +61,13 @@ function test_chruby_invalid_ruby()
 	chruby "jruby" 2>/dev/null
 
 	assertEquals "did not return 1" 1 $?
+}
+
+function tearDown()
+{
+	chruby_reset
+
+	RUBIES=(${original_rubies[@]})
 }
 
 SHUNIT_PARENT=$0 . $SHUNIT2
